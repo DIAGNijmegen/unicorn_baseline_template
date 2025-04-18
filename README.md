@@ -9,7 +9,6 @@ This repository:
 - Reads the challenge input for each task (e.g., image paths, report texts, etc.).
 - Produces an output JSON file for each sample.
 - Provides a dummy checksum-based feature extraction as a placeholder for real models for pathology and radiology vision tasks.
-- Provides a dummy checksum-based feature extraction as a placeholder for real models.
 
 📦 This ensures your code is **compatible with the challenge evaluation pipeline**, even before you plug in a real model!
 
@@ -27,12 +26,12 @@ This repository:
 - `model/`: Placeholder for model-related resources.
   - `README.md`: Instructions for uploading or including models.
   - `a_tarball_subdirectory/`: Example subdirectory for tarball resources.
+- `resources/`: Placeholder for other resources
 - `requirements.in` and `requirements.txt`: Python dependencies for the project.
 - `Dockerfile`: Defines the container environment for running the algorithm.
 - `do_build.sh`: Script to build the Docker container.
 - `do_test_run.sh`: Script to test the container locally.
 - `do_save.sh`: Script to save the container image and optional tarball for upload.
-- `.gitignore`: Specifies files and directories to ignore in version control.
 
 ## 🚀 Getting Started
 
@@ -42,23 +41,29 @@ This repository:
    cd unicorn_baseline_template
    ```
 
-2. Install dependencies:
+2. Create and activate a virtual environment (recommended):
+   ```bash
+   python -m venv unicorn
+   source unicorn/bin/activate
+   ```
+
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Run the inference script locally:
+4. Run the inference script locally:
    ```bash
    python inference.py
    ```
 
-4. Build and test the Docker container:
+5. Build and test the Docker container:
    ```bash
    ./do_build.sh
    ./do_test_run.sh
    ```
 
-5. Save the container for upload:
+6. Save the container for upload:
    ```bash
    ./do_save.sh
    ```
