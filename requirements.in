@@ -1,0 +1,9 @@
+SimpleITK
+numpy<2
+wholeslidedata==0.0.15
+tqdm
+matplotlib
+picai_prep>=2.1.13
+dragon_baseline>=0.4.4
+nltk
+numba
