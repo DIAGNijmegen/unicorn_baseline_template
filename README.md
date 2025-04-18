@@ -1,6 +1,6 @@
 # 🧱 UNICORN Baseline Template
 
-This repository provides a **minimal working template** for participating in the [UNICORN Challenge](https://unicorn-challenge.ai).<br>
+This repository provides a **minimal working template** for participating in the [UNICORN Challenge](https://unicorn.grand-challenge.org/).<br>
 It serves as a **starting point** for your own submission and implements the required boilerplate to run across all tasks in the challenge.
 
 ## 🔍 What It Does
