@@ -35,10 +35,14 @@ This repository:
 
 ## 🚀 Getting Started
 
+System requirements: Linux-based OS (e.g., Ubuntu 22.04) with Python 3.10+ and Docker installed.
+
 Depending on your preferred way of working, you can follow our tutorial for:
 
-1. [Local development with Python virtual environment](./setup-venv.md).
-2. [Local development with Docker](./setup-docker.md).
+1. [Local development with Docker](./setup-docker.md).
+2. [Local development with Python virtual environment](./setup-venv.md) [experimental].
+
+Note: we're working on adding the steps to provide the script with the necessary inputs, stay tuned!
 
 The local Python virtual environment does not include the steps needed to create a Docker container that can be uploaded to Grand Challenge, for that please check out the Docker tutorial.
 

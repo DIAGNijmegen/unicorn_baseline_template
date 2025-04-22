@@ -22,7 +22,8 @@
       ```
    - add ASAP binary to your virtual environment's `PYTHONPATH`:
       ```bash
-      echo "/opt/ASAP/bin" | sudo tee unicorn/lib/python3/site-packages/asap.pth
+      export SITE_PACKAGES=`unicorn/bin/python3 -c "import sysconfig; print(sysconfig.get_paths()['purelib'])"`
+      echo "/opt/ASAP/bin" | sudo tee ${SITE_PACKAGES}/asap.pth
       ```
 
 4. Install dependencies:
