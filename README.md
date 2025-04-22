@@ -35,53 +35,12 @@ This repository:
 
 ## 🚀 Getting Started
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/your-org/unicorn_baseline_template.git
-   cd unicorn_baseline_template
-   ```
+Depending on your preferred way of working, you can follow our tutorial for:
 
-2. Create and activate a virtual environment (recommended):
-   ```bash
-   python -m venv unicorn
-   source unicorn/bin/activate
-   ```
+1. [Local development with Python virtual environment](./setup-venv.md).
+2. [Local development with Docker](./setup-docker.md).
 
-3. Install ASAP 2.2
-
-   - download ASAP
-      ```bash
-      curl -L "https://github.com/computationalpathologygroup/ASAP/releases/download/ASAP-2.2-(Nightly)/ASAP-2.2-Ubuntu2204.deb" -o /tmp/ASAP.deb
-      ```
-   - install ASAP
-      ```bash
-      sudo apt-get install --assume-yes /tmp/ASAP.deb
-      ```
-   - add ASAP binary to your virtual environment's `PYTHONPATH`:
-      ```bash
-      echo "/opt/ASAP/bin" | sudo tee unicorn/lib/python3/site-packages/asap.pth
-      ```
-
-4. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-5. Run the inference script locally:
-   ```bash
-   python inference.py
-   ```
-
-6. Build and test the Docker container:
-   ```bash
-   ./do_build.sh
-   ./do_test_run.sh
-   ```
-
-7. Save the container for upload:
-   ```bash
-   ./do_save.sh
-   ```
+The local Python virtual environment does not include the steps needed to create a Docker container that can be uploaded to Grand Challenge, for that please check out the Docker tutorial.
 
 ## 🛠️ Customization
 
