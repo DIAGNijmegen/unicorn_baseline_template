@@ -47,23 +47,38 @@ This repository:
    source unicorn/bin/activate
    ```
 
-3. Install dependencies:
+3. Install ASAP 2.2
+
+   - download ASAP
+      ```bash
+      curl -L "https://github.com/computationalpathologygroup/ASAP/releases/download/ASAP-2.2-(Nightly)/ASAP-2.2-Ubuntu2204.deb" -o /tmp/ASAP.deb
+      ```
+   - install ASAP
+      ```bash
+      sudo apt-get install --assume-yes /tmp/ASAP.deb
+      ```
+   - add ASAP binary to your virtual environment's `PYTHONPATH`:
+      ```bash
+      echo "/opt/ASAP/bin" | sudo tee unicorn/lib/python3/site-packages/asap.pth
+      ```
+
+4. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Run the inference script locally:
+5. Run the inference script locally:
    ```bash
    python inference.py
    ```
 
-5. Build and test the Docker container:
+6. Build and test the Docker container:
    ```bash
    ./do_build.sh
    ./do_test_run.sh
    ```
 
-6. Save the container for upload:
+7. Save the container for upload:
    ```bash
    ./do_save.sh
    ```
