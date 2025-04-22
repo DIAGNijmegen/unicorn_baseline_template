@@ -49,10 +49,11 @@ import SimpleITK as sitk
 from dragon_baseline.main import DragonBaseline
 from dragon_baseline.nlp_algorithm import TaskDetails
 from tqdm import tqdm
-from vision.encoding.pathology.info import image_info
-from vision.encoding.pathology.utils import sort_coordinates_with_tissue
-from vision.encoding.pathology.wsi import WholeSlideImage
-from vision.encoding.radiology.patch_extraction import extract_patches
+
+from vision.pathology.info import image_info
+from vision.pathology.utils import sort_coordinates_with_tissue
+from vision.pathology.wsi import WholeSlideImage
+from vision.radiology.patch_extraction import extract_patches
 
 INPUT_PATH = Path("/input")
 OUTPUT_PATH = Path("/output")
