@@ -35,38 +35,16 @@ This repository:
 
 ## 🚀 Getting Started
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/your-org/unicorn_baseline_template.git
-   cd unicorn_baseline_template
-   ```
+System requirements: Linux-based OS (e.g., Ubuntu 22.04) with Python 3.10+ and Docker installed.
 
-2. Create and activate a virtual environment (recommended):
-   ```bash
-   python -m venv unicorn
-   source unicorn/bin/activate
-   ```
+Depending on your preferred way of working, you can follow our tutorial for:
 
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+1. [Local development with Docker](./setup-docker.md).
+2. [Local development with Python virtual environment](./setup-venv.md) [experimental].
 
-4. Run the inference script locally:
-   ```bash
-   python inference.py
-   ```
+Note: we're working on adding the steps to provide the script with the necessary inputs, stay tuned!
 
-5. Build and test the Docker container:
-   ```bash
-   ./do_build.sh
-   ./do_test_run.sh
-   ```
-
-6. Save the container for upload:
-   ```bash
-   ./do_save.sh
-   ```
+The local Python virtual environment does not include the steps needed to create a Docker container that can be uploaded to Grand Challenge, for that please check out the Docker tutorial.
 
 ## 🛠️ Customization
 
