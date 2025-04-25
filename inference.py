@@ -51,8 +51,8 @@ from dragon_baseline.nlp_algorithm import TaskDetails
 from tqdm import tqdm
 
 from vision.pathology.info import image_info
-from vision.pathology.utils import sort_coordinates_with_tissue
-from vision.pathology.wsi import WholeSlideImage
+from vision.pathology.utils import select_coordinates_with_tissue
+from vision.pathology.wsi import TilingParams, WholeSlideImage
 from vision.radiology.patch_extraction import extract_patches
 
 INPUT_PATH = Path("/input")
@@ -176,7 +176,9 @@ def process_image_pathology(
     patch_size: int = 224,
     spacing: float = 0.5,
     overlap: float = 0.0,
-    num_workers: int = 4,
+    min_tissue_percentage: float = 0.25,
+    max_number_of_tiles: int | None = None,
+    num_workers: int = 8,
 ) -> list[dict]:
     """
     Generate a list of patch features from a pathology image
@@ -189,11 +191,18 @@ def process_image_pathology(
     patch_features = []
     wsi = WholeSlideImage(image_path, tissue_mask_path)
     coordinates, tissue_percentages, patch_level, resize_factor, _, = wsi.get_tile_coordinates(
-        spacing, patch_size, overlap=overlap, num_workers=num_workers
+        target_spacing=spacing,
+        target_tile_size=patch_size,
+        overlap=overlap,
+        num_workers=num_workers,
+        tiling_params=TilingParams(tissue_thresh=min_tissue_percentage),
     )
-    patch_coordinates, _ = sort_coordinates_with_tissue(
-        coordinates, tissue_percentages
+    patch_coordinates, _ = select_coordinates_with_tissue(
+        coordinates=coordinates,
+        tissue_percentages=tissue_percentages,
+        max_number_of_tiles=max_number_of_tiles,
     )
+
     print(f"Extracting features from patches")
     for x, y in tqdm(patch_coordinates, desc="Extracting features"):
         patch_spacing = wsi.spacings[patch_level]
@@ -283,10 +292,13 @@ def process_image(
     Generate a list of patch features from an image
     """
     if task_description["domain"] == "pathology":
+        max_number_of_tiles = 14_000 if task_description["task_type"] in ["classification", "regression"] else None
+
         patch_level_neural_representation = process_image_pathology(
             image_path=image_path,
             tissue_mask_path=tissue_mask_path,
             title=title,
+            max_number_of_tiles=max_number_of_tiles,
         )
     elif task_description["domain"] in ["CT", "MR"]:
         patch_level_neural_representation = process_image_radiology(
