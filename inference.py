@@ -347,9 +347,10 @@ def predict_language(
 def run_vision_and_visionlanguage():
     # Read the task description and inputs information
     task_description = load_task_description(input_path=INPUT_PATH / "unicorn-task-description.json")
-    input_information = load_inputs(input_path=INPUT_PATH / "inputs.json")
-
     print(f"Task description: {task_description}")
+
+    input_information = load_inputs(input_path=INPUT_PATH / "inputs.json")
+    print(f"Input information: {input_information}")
 
     # Read the input
     image_inputs = []
