@@ -9,6 +9,7 @@ def select_coordinates_with_tissue(
     tissue_percentages: list[float],
     min_tissue_percentage: float = 0.0,
     max_number_of_tiles: int | None = None,
+    seed: int | None = None,
 ) -> tuple[list[tuple], list[float]]:
     """
     Select coordinates and their corresponding tissue percentages based on a minimum
@@ -45,7 +46,8 @@ def select_coordinates_with_tissue(
     # Separate perfect tissue tiles
     perfect = [(c, p) for c, p in filtered if p == 1.0]
     if max_number_of_tiles is not None and len(perfect) > max_number_of_tiles:
-        selected = random.sample(perfect, max_number_of_tiles)
+        rng = random.Random(seed)
+        selected = rng.sample(perfect, max_number_of_tiles)
     else:
         # Sort by descending tissue percentage and take top N if needed
         filtered.sort(key=lambda x: x[1], reverse=True)

@@ -179,6 +179,7 @@ def process_image_pathology(
     min_tissue_percentage: float = 0.25,
     max_number_of_tiles: int | None = None,
     num_workers: int = 8,
+    seed: int | None = 576,
 ) -> list[dict]:
     """
     Generate a list of patch features from a pathology image
@@ -195,12 +196,13 @@ def process_image_pathology(
         target_tile_size=patch_size,
         overlap=overlap,
         num_workers=num_workers,
-        tiling_params=TilingParams(tissue_thresh=min_tissue_percentage),
+        tiling_params=TilingParams(drop_holes=False, tissue_thresh=min_tissue_percentage, use_padding=True),
     )
     patch_coordinates, _ = select_coordinates_with_tissue(
         coordinates=coordinates,
         tissue_percentages=tissue_percentages,
         max_number_of_tiles=max_number_of_tiles,
+        seed=seed,
     )
 
     print(f"Extracting features from patches")
