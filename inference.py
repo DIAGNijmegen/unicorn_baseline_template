@@ -52,7 +52,7 @@ from tqdm import tqdm
 
 from vision.pathology.info import image_info
 from vision.pathology.utils import select_coordinates_with_tissue
-from vision.pathology.wsi import TilingParams, WholeSlideImage
+from vision.pathology.wsi import TilingParams, FilterParams, WholeSlideImage
 from vision.radiology.patch_extraction import extract_patches
 
 INPUT_PATH = Path("/input")
@@ -192,11 +192,9 @@ def process_image_pathology(
     patch_features = []
     wsi = WholeSlideImage(image_path, tissue_mask_path)
     coordinates, tissue_percentages, patch_level, resize_factor, _, = wsi.get_tile_coordinates(
-        target_spacing=spacing,
-        target_tile_size=patch_size,
-        overlap=overlap,
+        tiling_params=TilingParams(spacing=spacing, tile_size=patch_size, overlap=overlap, drop_holes=False, min_tissue_percentage=min_tissue_percentage, use_padding=True),
+        filter_params=FilterParams(ref_tile_size=patch_size, a_t=4, a_h=2, max_n_holes=8),
         num_workers=num_workers,
-        tiling_params=TilingParams(drop_holes=False, tissue_thresh=min_tissue_percentage, use_padding=True),
     )
     patch_coordinates, _ = select_coordinates_with_tissue(
         coordinates=coordinates,
