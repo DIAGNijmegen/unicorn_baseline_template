@@ -221,11 +221,8 @@ class WholeSlideImage(object):
         tissue_pixel_value: int = 1,
     ):
         """
-        Load and process a segmentation mask for a whole slide image.
-
-        This method ensures that the segmentation mask and the slide have at least one
-        common spacing, determines the best level for the given downsample factor, and
-        processes the segmentation mask to create a binary mask.
+        Processes the segmentation mask to create a binary mask. The binary mask is resized
+        to match the dimensions of the slide at the level corresponding to the desired downsample.
 
         Args:
             downsample (int): Downsample factor for finding best level for tissue segmentation.
