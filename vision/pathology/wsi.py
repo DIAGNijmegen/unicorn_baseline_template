@@ -80,7 +80,7 @@ class WholeSlideImage(object):
             path (Path): Path to the wsi.
             mask_path (Path): Path to the tissue mask, if available. Defaults to None.
             spacing (float): Manually set spacing at level 0, if speficied. Defaults to None.
-            downsample (int): Downsample factor for finding best level for tissue segmentation. Defaults to 64.
+            downsample (int): Downsample factor for finding best level for tissue segmentation. Defaults to 32.
             backend (str): Backend to use for opening the wsi. Defaults to "asap".
         """
 
@@ -161,7 +161,7 @@ class WholeSlideImage(object):
             self._level_spacing_cache[level] = self.spacings[level]
         return self._level_spacing_cache[level]
 
-    def get_best_level_for_spacing(self, target_spacing: float, tolerance: float = 0.05):
+    def get_best_level_for_spacing(self, target_spacing: float, tolerance: float):
         """
         Determines the best level in a multi-resolution image pyramid for a given target spacing.
 
@@ -195,9 +195,9 @@ class WholeSlideImage(object):
                     is_within_tolerance = True
                     break
 
-        assert (
-            level_spacing <= target_spacing or abs(level_spacing - target_spacing) / target_spacing <= tolerance
-        ), f"Unable to find a level with spacing less than or equal to the target spacing ({target_spacing}) or within {int(tolerance * 100)}% of the target spacing."
+        if not abs(level_spacing - target_spacing) / target_spacing <= tolerance:
+            print(f"Unable to find a level with spacing within {tolerance:.0%} of the target spacing ({target_spacing:.2f}). Resampling from {level_spacing:.2f} instead.")
+
         return level, is_within_tolerance
 
     def get_best_level_for_downsample_custom(self, downsample: float | int):
@@ -218,7 +218,7 @@ class WholeSlideImage(object):
         self,
         downsample: int,
         sthresh_up: int = 255,
-        tissue_val: int = 1,
+        tissue_pixel_value: int = 1,
     ):
         """
         Load and process a segmentation mask for a whole slide image.
@@ -237,30 +237,26 @@ class WholeSlideImage(object):
         Returns:
             int: Level at which the tissue mask was loaded.
         """
-        # ensure mask and slide have at least one common spacing
-        common_spacings = find_common_spacings(
-            spacings_1=self.spacings, spacings_2=self.mask.spacings, tolerance=0.1
-        )
-        assert (
-            len(common_spacings) >= 1
-        ), f"The provided segmentation mask (spacings={self.mask.spacings}) has no common spacing with the slide (spacings={self.spacings}). A minimum of 1 common spacing is required."
-
+        mask_spacing_at_level_0 = self.mask.spacings[0]
         seg_level = self.get_best_level_for_downsample_custom(downsample)
         seg_spacing = self.get_level_spacing(seg_level)
 
-        # check if this spacing is present in common spacings
-        is_in_common_spacings = seg_spacing in [s for s, _ in common_spacings]
-        if not is_in_common_spacings:
-            # find spacing that is common to slide and mask and that is the closest to seg_spacing
-            closest = np.argmin([abs(seg_spacing - s) for s, _ in common_spacings])
-            closest_common_spacing = common_spacings[closest][0]
-            seg_spacing = closest_common_spacing
-            seg_level, _ = self.get_best_level_for_spacing(seg_spacing)
+        mask_downsample = seg_spacing / mask_spacing_at_level_0
+        mask_level = int(np.argmin([abs(x - mask_downsample) for x in self.mask.downsamplings]))
+        mask_spacing = self.mask.spacings[mask_level]
 
-        m = self.mask.get_slide(spacing=seg_spacing)
-        m = m[..., 0]
+        scale = seg_spacing / mask_spacing
+        while scale < 1 and mask_level > 0:
+            mask_level -= 1
+            mask_spacing = self.mask.spacings[mask_level]
+            scale = seg_spacing / mask_spacing
 
-        m = (m == tissue_val).astype("uint8")
+        mask = self.mask.get_slide(spacing=mask_spacing)
+        width, height, _ = mask.shape
+        # resize the mask to the size of the slide at seg_spacing
+        mask = cv2.resize(mask.astype(np.uint8), (int(height / scale), int(width / scale)), interpolation=cv2.INTER_NEAREST)
+
+        m = (mask == tissue_pixel_value).astype("uint8")
         if np.max(m) <= 1:
             m = m * sthresh_up
 
@@ -356,7 +352,7 @@ class WholeSlideImage(object):
         scale = tiling_params.spacing / self.get_level_spacing(0)
         tile_size_lv0 = int(tiling_params.tile_size * scale)
 
-        contours, holes = self.detect_contours(tiling_params.spacing, filter_params)
+        contours, holes = self.detect_contours(tiling_params.spacing, tiling_params.tolerance, filter_params)
         (
             running_x_coords,
             running_y_coords,
@@ -439,6 +435,7 @@ class WholeSlideImage(object):
     def detect_contours(
         self,
         target_spacing: float,
+        tolerance: float,
         filter_params: FilterParams,
     ):
         """
@@ -449,6 +446,7 @@ class WholeSlideImage(object):
 
         Args:
             target_spacing (float): Desired spacing at which tiles should be extracted.
+            tolerance (float): Tolerance for matching the target spacing.
             filter_params (NamedTuple): A NamedTuple containing filtering parameters:
                 - "a_t" (int): Minimum area threshold for foreground contours.
                 - "a_h" (int): Minimum area threshold for holes within contours.
@@ -461,7 +459,7 @@ class WholeSlideImage(object):
                 - A list of lists containing scaled hole contours for each foreground contour.
         """
 
-        spacing_level, _ = self.get_best_level_for_spacing(target_spacing)
+        spacing_level, _ = self.get_best_level_for_spacing(target_spacing, tolerance)
         current_scale = self.level_downsamples[spacing_level]
         target_scale = self.level_downsamples[self.seg_level]
         scale = tuple(a / b for a, b in zip(target_scale, current_scale))
@@ -714,8 +712,6 @@ class WholeSlideImage(object):
         resize_factor = spacing / tile_spacing
         if is_within_tolerance:
             resize_factor = 1.0
-
-        assert resize_factor >= 1, f"Resize factor should be greater than or equal to 1. Got {resize_factor}"
 
         tile_size_resized = int(tile_size * resize_factor)
         step_size = int(tile_size_resized * (1.0 - overlap))
