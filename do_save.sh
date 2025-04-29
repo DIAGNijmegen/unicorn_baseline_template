@@ -6,7 +6,7 @@ set -e
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Set default container name
-DOCKER_IMAGE_TAG="unicorn_template:latest"
+DOCKER_IMAGE_TAG="unicorn_templatelatest"
 
 # Check if an argument is provided
 if [ "$#" -eq 1 ]; then
