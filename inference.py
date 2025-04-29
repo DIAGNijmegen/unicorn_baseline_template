@@ -175,6 +175,7 @@ def process_image_pathology(
     title: str = "patch-level-neural-representation",
     patch_size: int = 224,
     spacing: float = 0.5,
+    tolerance: float = 0.07,
     overlap: float = 0.0,
     min_tissue_percentage: float = 0.25,
     max_number_of_tiles: int | None = None,
@@ -192,7 +193,7 @@ def process_image_pathology(
     patch_features = []
     wsi = WholeSlideImage(image_path, tissue_mask_path)
     coordinates, tissue_percentages, patch_level, resize_factor, _, = wsi.get_tile_coordinates(
-        tiling_params=TilingParams(spacing=spacing, tile_size=patch_size, overlap=overlap, drop_holes=False, min_tissue_percentage=min_tissue_percentage, use_padding=True, tolerance=0.07),
+        tiling_params=TilingParams(spacing=spacing, tile_size=patch_size, overlap=overlap, drop_holes=False, min_tissue_percentage=min_tissue_percentage, use_padding=True, tolerance=tolerance),
         filter_params=FilterParams(ref_tile_size=patch_size, a_t=4, a_h=2, max_n_holes=8),
         num_workers=num_workers,
     )
