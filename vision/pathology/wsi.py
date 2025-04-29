@@ -11,7 +11,7 @@ import wholeslidedata as wsd
 from numba import njit
 from PIL import Image
 
-from vision.pathology.wsi_utils import HasEnoughTissue, find_common_spacings
+from vision.pathology.wsi_utils import HasEnoughTissue
 
 # ignore all warnings from wholeslidedata
 warnings.filterwarnings("ignore", module="wholeslidedata")
