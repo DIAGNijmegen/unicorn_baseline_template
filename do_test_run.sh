@@ -1,20 +1,52 @@
+#!/usr/bin/env bash
+
+# ============================================================================
+# do_test_run.sh
+#
+# This script performs a test run of a Docker container.
+#
+# Usage:
+#    ./do_test_run.sh <TASK_FOLDER_OR_ZIP> [DOCKER_IMAGE_TAG]
+#
+# Description:
+# 1. **Local Development with Public Shots**:
+#    - Provide the task folder or zip file containing the public shots data as the first argument.
+#    - Optionally, provide the Docker image tag as the second argument.
+#    - Example:
+#      ./do_test_run.sh /path/to/task_folder unicorn_template
+#
+# 2. **On the Platform (e.g. GC)**:
+#    - You may run the script with just the input task folder:
+#      ./do_test_run.sh /path/to/task_folder
+#
+# Arguments:
+#    $1 - Task folder or zip file (required)
+#    $2 - Docker image tag (optional, default: unicorn_template)
+#
+# ============================================================================
+
 set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# === Parameters ===
+# === Argument parsing ===
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 <input_folder> [docker_image_tag]"
+    echo "Error: Missing required argument <TASK_FOLDER_OR_ZIP>"
+    echo "Usage: $0 <TASK_FOLDER_OR_ZIP> [DOCKER_IMAGE_TAG]"
     exit 1
 fi
 
 INPUT_DIR="$1"
-DOCKER_IMAGE_TAG="${2:-unicorn_baseline}"   # Use $2 if given, else default
+DOCKER_IMAGE_TAG="${2:-unicorn_template}"
 
-DOCKER_NOOP_VOLUME="${DOCKER_IMAGE_TAG}-volume"
+echo "Using INPUT_DIR: $INPUT_DIR"
+echo "Using DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
+
 OUTPUT_DIR="${SCRIPT_DIR}/test/output"
+DOCKER_NOOP_VOLUME="${DOCKER_IMAGE_TAG}-volume"
 
 echo "=+= (Re)build the container"
+
 source "${SCRIPT_DIR}/do_build.sh" "$DOCKER_IMAGE_TAG"
 
 cleanup() {
