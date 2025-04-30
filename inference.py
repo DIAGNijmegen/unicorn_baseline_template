@@ -42,6 +42,7 @@ from glob import glob
 from pathlib import Path
 from typing import Any, Iterable
 
+import cv2
 import nltk
 import numpy as np
 import pandas as pd
@@ -52,7 +53,7 @@ from tqdm import tqdm
 
 from vision.pathology.info import image_info
 from vision.pathology.utils import select_coordinates_with_tissue
-from vision.pathology.wsi import TilingParams, FilterParams, WholeSlideImage
+from vision.pathology.wsi import FilterParams, TilingParams, WholeSlideImage
 from vision.radiology.patch_extraction import extract_patches
 
 INPUT_PATH = Path("/input")
@@ -175,6 +176,7 @@ def process_image_pathology(
     title: str = "patch-level-neural-representation",
     patch_size: int = 224,
     spacing: float = 0.5,
+    tolerance: float = 0.07,
     overlap: float = 0.0,
     min_tissue_percentage: float = 0.25,
     max_number_of_tiles: int | None = None,
@@ -192,7 +194,7 @@ def process_image_pathology(
     patch_features = []
     wsi = WholeSlideImage(image_path, tissue_mask_path)
     coordinates, tissue_percentages, patch_level, resize_factor, _, = wsi.get_tile_coordinates(
-        tiling_params=TilingParams(spacing=spacing, tile_size=patch_size, overlap=overlap, drop_holes=False, min_tissue_percentage=min_tissue_percentage, use_padding=True, tolerance=0.07),
+        tiling_params=TilingParams(spacing=spacing, tile_size=patch_size, overlap=overlap, drop_holes=False, min_tissue_percentage=min_tissue_percentage, use_padding=True, tolerance=tolerance),
         filter_params=FilterParams(ref_tile_size=patch_size, a_t=4, a_h=2, max_n_holes=8),
         num_workers=num_workers,
     )
@@ -208,6 +210,8 @@ def process_image_pathology(
         patch_spacing = wsi.spacings[patch_level]
         patch_size_resized = int(patch_size * resize_factor)
         patch = wsi.get_tile(x, y, [patch_size_resized, patch_size_resized], patch_spacing)
+        # resize patch to the desired patch size
+        patch = cv2.resize(patch, (patch_size, patch_size), interpolation=cv2.INTER_LINEAR)
         features = feature_extraction(patch)
         patch_features.append({
             "coordinates": (x, y),

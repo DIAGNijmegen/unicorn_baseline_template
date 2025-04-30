@@ -1,5 +1,6 @@
 SimpleITK
 numpy<2
+opencv-python
 wholeslidedata==0.0.15
 tqdm
 matplotlib
