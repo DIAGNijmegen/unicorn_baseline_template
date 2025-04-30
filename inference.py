@@ -42,6 +42,7 @@ from glob import glob
 from pathlib import Path
 from typing import Any, Iterable
 
+import cv2
 import nltk
 import numpy as np
 import pandas as pd
@@ -52,7 +53,7 @@ from tqdm import tqdm
 
 from vision.pathology.info import image_info
 from vision.pathology.utils import select_coordinates_with_tissue
-from vision.pathology.wsi import TilingParams, FilterParams, WholeSlideImage
+from vision.pathology.wsi import FilterParams, TilingParams, WholeSlideImage
 from vision.radiology.patch_extraction import extract_patches
 
 INPUT_PATH = Path("/input")
@@ -209,6 +210,8 @@ def process_image_pathology(
         patch_spacing = wsi.spacings[patch_level]
         patch_size_resized = int(patch_size * resize_factor)
         patch = wsi.get_tile(x, y, [patch_size_resized, patch_size_resized], patch_spacing)
+        # resize patch to the desired patch size
+        patch = cv2.resize(patch, (patch_size, patch_size), interpolation=cv2.INTER_LINEAR)
         features = feature_extraction(patch)
         patch_features.append({
             "coordinates": (x, y),
