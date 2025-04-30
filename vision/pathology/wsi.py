@@ -1,6 +1,6 @@
 import sys
-import warnings
 import threading
+import warnings
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import NamedTuple
@@ -258,6 +258,7 @@ class WholeSlideImage(object):
 
         mask = self.mask.get_slide(spacing=mask_spacing)
         width, height, _ = mask.shape
+
         # resize the mask to the size of the slide at seg_spacing
         mask = cv2.resize(mask.astype(np.uint8), (int(height / scale), int(width / scale)), interpolation=cv2.INTER_NEAREST)
 
