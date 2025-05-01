@@ -1,45 +1,43 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # ============================================================================
 # do_test_run.sh
 #
-# This script performs a test run of a Docker container.
+# Performs local test run using the specified Docker container on a single test case per task.
 #
-# Usage:
-#    ./do_test_run.sh <TASK_FOLDER_OR_ZIP> [DOCKER_IMAGE_TAG]
+# USAGE:
+#   ./do_test_run.sh <CASE_FOLDER> [DOCKER_IMAGE_TAG]
 #
-# Description:
-# 1. **Local Development with Public Shots**:
-#    - Provide the task folder or zip file containing the public shots data as the first argument.
-#    - Optionally, provide the Docker image tag as the second argument.
-#    - Example:
-#      ./do_test_run.sh /path/to/task_folder unicorn_template
+# DESCRIPTION:
+#   - This script performs a test run on one public few-shot case using the Docker.
+#   - The first argument should point to a fully prepared input folder
+#     (typically a subdirectory of shots-public/, e.g., `shots-public/123456`).
+#   - The second optional argument specifies the Docker image tag (default: unicorn_template).
 #
-# 2. **On the Platform (e.g. GC)**:
-#    - You may run the script with just the input task folder:
-#      ./do_test_run.sh /path/to/task_folder
-#
-# Arguments:
-#    $1 - Task folder or zip file (required)
-#    $2 - Docker image tag (optional, default: unicorn_template)
-#
-# ============================================================================
+# EXAMPLES:
+#   ./do_test_run.sh local_data/Task01_classifying_he_prostate_biopsies_into_isup_scores/shots-public/0f958c8bbbc828b2e043e49ea39e16e2
 
+#
+# ARGUMENTS:
+#   $1 - Path to input case folder (required)
+#   $2 - Docker image tag to run (optional, default: unicorn_template)
+
+# ============================================================================
 set -e
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # === Argument parsing ===
 if [ $# -lt 1 ]; then
-    echo "Error: Missing required argument <TASK_FOLDER_OR_ZIP>"
-    echo "Usage: $0 <TASK_FOLDER_OR_ZIP> [DOCKER_IMAGE_TAG]"
+    echo "Error: Missing required argument <CASE_FOLDER_OR_ZIP>"
+    echo "Usage: $0 <CASE_FOLDER_OR_ZIP> [DOCKER_IMAGE_TAG]"
     exit 1
 fi
 
 INPUT_DIR="$1"
 DOCKER_IMAGE_TAG="${2:-unicorn_template}"
 
-echo "Using INPUT_DIR: $INPUT_DIR"
+
 echo "Using DOCKER_IMAGE_TAG: $DOCKER_IMAGE_TAG"
 
 OUTPUT_DIR="${SCRIPT_DIR}/test/output"

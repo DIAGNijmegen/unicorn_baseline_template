@@ -11,11 +11,11 @@
 #   4. Performs a local test run (`./do_test_run.sh`) for an example shot.
 #
 # Example for Task 1:
-#   BASE_URL="https://zenodo.org/record/15112095/files"
+#   BASE_URL="/path/to/latest/version/of/zenodo/public-shots"
 #   ZIP="Task01_classifying_he_prostate_biopsies_into_isup_scores.zip"
 #
 # Usage:
-#   ./run_task_local.sh "${BASE_URL}/${ZIP}"
+#   ./run_task.sh "${BASE_URL}/${ZIP}"
 # ------------------------------------------------------------------------------
 
 set -e
@@ -44,41 +44,50 @@ else
     # 2. If not unzipped, check for zip file
     if [ -f "$OUTPUT_NAME" ]; then
         echo "ZIP file $OUTPUT_NAME exists, extracting to $TASK_FOLDER ..."
+
     else
         # 3. If zip file is missing, download it then unzip
         echo "Downloading $OUTPUT_NAME from $FILE_URL ..."
         curl -L -o "$OUTPUT_NAME" "$FILE_URL"
     fi
     mkdir -p "$TASK_FOLDER"
-    unzip -o "$OUTPUT_NAME" -d "$TASK_FOLDER"
+    unzip -oq "$OUTPUT_NAME" -d "$TASK_FOLDER"
     echo "Unzipped to $TASK_FOLDER"
+    
+    # Remove the ZIP file after successful extraction
+    rm -f "$OUTPUT_NAME"
+    echo "Removed ZIP file: $OUTPUT_NAME"
 fi
 
-# NOTE: The following rename is ONLY for Task01_classifying_he_prostate_biopsies_into_isup_scores.
-# This is due to a known bug with the directory name ("prostate-tissue-biopsy-wsi" should be
-# "prostate-tissue-biospy-wsi" to be consistent with GC platform).
-if [ "$TASK_NAME" == "Task01_classifying_he_prostate_biopsies_into_isup_scores" ]; then
-    find "${TASK_FOLDER}/shots-public" -type d -name "prostate-tissue-biopsy-wsi" | while read dir; do
-        new_dir="${dir%prostate-tissue-biopsy-wsi}prostate-tissue-biospy-wsi"
-        if [ ! -d "$new_dir" ]; then
-            echo "Renaming images/prostate-tissue-biopsy-wsi to images/prostate-tissue-biospy-wsi in all cases..."
-            mv "$dir" "$new_dir"
-            echo "Renamed $dir -> $new_dir"
-        else
-            echo "Skip $dir, already exists as $new_dir"
-        fi
-    done
+## Depending on the modality the test test_run is receives a single public shot (vision/-language) or all shots (language) as input
+TASK_NAME=$(basename "$TASK_FOLDER")
+
+# Extract just the task number (e.g., "12" from "Task12_predicting_histopathology_sample_origin.zip")
+TASK_NUMBER=$(echo "$TASK_NAME" | grep -oP 'Task\K[0-9]+')
+
+# List of language tasks 
+LANGUAGE_TASKS=(12 13 14 15 16 17 18 19 20)
+
+# Check if task number is in the LANGUAGE_TASKS list
+IS_LANGUAGE_TASK=false
+for LANG_TASK in "${LANGUAGE_TASKS[@]}"; do
+    if [ "$TASK_NUMBER" -eq "$LANG_TASK" ]; then
+        IS_LANGUAGE_TASK=true
+        break
+    fi
+done
+
+# Mount data folder
+if [ "$IS_LANGUAGE_TASK" = true ]; then
+    echo "Detected language task (Task${TASK_NUMBER}). Mounting the entire task folder."
+    ABS_PATH=$(realpath "${TASK_FOLDER}/shots-public")
+else
+    echo "Detected vision/-language task (Task${TASK_NUMBER}). Mounting the first case from shots-public."
+    SHOTS_PUBLIC="${TASK_FOLDER}/shots-public"
+    FIRST_CASE=$(ls "$SHOTS_PUBLIC" | head -n 1)
+    ABS_PATH=$(realpath "${SHOTS_PUBLIC}/${FIRST_CASE}")
+
 fi
 
-
-# Find the first case_id in shots-public
-SHOTS_PUBLIC="${TASK_FOLDER}/shots-public"
-FIRST_CASE=$(ls "$SHOTS_PUBLIC" | head -n 1)
-echo "Processing case: $FIRST_CASE"
-
-
-# Mount the CONTENTS of the case to test/input/
-ABS_PATH=$(realpath "./${SHOTS_PUBLIC}/${FIRST_CASE}")
-
-# Perform the test run with a public shot
+# Run local test
 ./do_test_run.sh "$ABS_PATH"
