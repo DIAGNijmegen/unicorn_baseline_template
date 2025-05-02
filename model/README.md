@@ -1,7 +1,7 @@
-## Upload your model (Recommneded approach)
+## Upload your model (Recommended approach)
 
 You can upload your method's model separately from the container image as a tarball (.tar.gz) on Grand Challenge under
- **Your algorithm > Models**. This approach is preferred because it's easier to update model weights without rebuilding your Docker image.
+ **Your algorithm > Models**. This approach is preferred because it is easier to update model weights without rebuilding your Docker image. Additionally, this approach significantly reduces the size of the algorithm's Docker image.
 
 
 You can use this command to .tar your model:  `tar -czvf algorithmmodel.tar.gz a_tarball_subdirectory` 
