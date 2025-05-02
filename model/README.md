@@ -14,7 +14,7 @@ model
 └── README.md
 ```
 
-At runtime, it be available in the container as:
+At runtime, it will be available in the container as:
 
 `/opt/ml/model/a_tarball_subdirectory/some_tarball_resource.txt `
 
