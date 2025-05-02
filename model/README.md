@@ -14,8 +14,4 @@ model
 └── README.md
 ```
 
-At runtime, it will be available in the container as:
-
-`/opt/ml/model/a_tarball_subdirectory/some_tarball_resource.txt `
-
-
+At runtime, the content of the model folder will be available in the container at `/opt/ml/model`.
