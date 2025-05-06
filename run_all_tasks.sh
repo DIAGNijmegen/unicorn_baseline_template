@@ -27,7 +27,7 @@ TASK_ZIPS=(
     Task10_segmenting_lesions_within_vois_in_ct.zip
     Task11_segmenting_three_anatomical_structures_in_lumbar_spine_mri.zip
     Task12_predicting_histopathology_sample_origin.zip
-     Task13_classifying_pulmonary_nodule_presence.zip
+    Task13_classifying_pulmonary_nodule_presence.zip
     Task14_classifying_kidney_abnormality.zip
     Task15_hip_kellgren_lawrence_score.zip
     Task16_classifying_colon_histopathology_diagnosis.zip
