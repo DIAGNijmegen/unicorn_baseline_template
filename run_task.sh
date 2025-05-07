@@ -76,7 +76,7 @@ TASK_NAME=$(basename "$TASK_FOLDER")
 TASK_NUMBER=$(echo "$TASK_NAME" | grep -oP 'Task\K[0-9]+')
 
 # List of language tasks 
-LANGUAGE_TASKS=(12 13 14 15 16 17 18 19 20)
+LANGUAGE_TASKS=(12 13 14 15 16 17 18 19)
 
 # Check if task number is in the LANGUAGE_TASKS list
 IS_LANGUAGE_TASK=false
