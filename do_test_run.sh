@@ -67,7 +67,7 @@ if [ -d "$OUTPUT_DIR" ]; then
       "$DOCKER_IMAGE_TAG" \
       -c "rm -rf /output/* || true"
 else
-  mkdir -m o+rwx "$OUTPUT_DIR"
+  mkdir -p -m o+rwx "$OUTPUT_DIR"
 fi
 
 trap cleanup EXIT
