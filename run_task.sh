@@ -28,6 +28,7 @@ fi
 FILE_URL="$1"
 OUTPUT_NAME=$(basename "${FILE_URL%%\?*}")  
 TASK_NAME="${OUTPUT_NAME%.zip}"
+TEMP_ZIP="${OUTPUT_NAME}.part"
 LOCAL_DATA_DIR="local_data"
 TASK_FOLDER="${LOCAL_DATA_DIR}/${TASK_NAME}"
 
@@ -41,20 +42,29 @@ fi
 if [ -d "${TASK_FOLDER}/shots-public" ]; then
     echo "Data already extracted at ${TASK_FOLDER}/shots-public, nothing to do."
 else
-    # 2. If not unzipped, check for zip file
-    if [ -f "$OUTPUT_NAME" ]; then
-        echo "ZIP file $OUTPUT_NAME exists, extracting to $TASK_FOLDER ..."
+    # 2. If ZIP file doesn't exist or is invalid, (re)download it to a temp file
+    if [ ! -f "$OUTPUT_NAME" ]; then
+        echo "Downloading $OUTPUT_NAME from $FILE_URL to $TEMP_ZIP ..."
+        curl -L -o "$TEMP_ZIP" "$FILE_URL"
 
-    else
-        # 3. If zip file is missing, download it then unzip
-        echo "Downloading $OUTPUT_NAME from $FILE_URL ..."
-        curl -L -o "$OUTPUT_NAME" "$FILE_URL"
+        # Validate ZIP
+        if unzip -tq "$TEMP_ZIP" >/dev/null; then
+            mv "$TEMP_ZIP" "$OUTPUT_NAME"
+            echo "ZIP file validated and renamed to $OUTPUT_NAME"
+        else
+            echo "ERROR: Downloaded ZIP file is corrupt. Removing $TEMP_ZIP"
+            rm -f "$TEMP_ZIP"
+            exit 1
+        fi
     fi
+
+    # 3. Extract
+    echo "Extracting $OUTPUT_NAME to $TASK_FOLDER ..."
     mkdir -p "$TASK_FOLDER"
     unzip -oq "$OUTPUT_NAME" -d "$TASK_FOLDER"
     echo "Unzipped to $TASK_FOLDER"
-    
-    # Remove the ZIP file after successful extraction
+
+    # 4. Remove ZIP after successful extraction
     rm -f "$OUTPUT_NAME"
     echo "Removed ZIP file: $OUTPUT_NAME"
 fi
