@@ -173,16 +173,14 @@ def make_patch_level_neural_representation(
 def process_image_pathology(
     image_path: Path,
     tissue_mask_path: Path,
+    tiling_params: TilingParams,
+    filter_params: FilterParams,
     title: str = "patch-level-neural-representation",
-    patch_size: int = 224,
-    spacing: float = 0.5,
-    tolerance: float = 0.07,
-    overlap: float = 0.0,
-    min_tissue_percentage: float = 0.25,
     max_number_of_tiles: int | None = None,
     num_workers: int = 8,
     seed: int | None = 576,
 ) -> list[dict]:
+
     """
     Generate a list of patch features from a pathology image
 
@@ -191,13 +189,15 @@ def process_image_pathology(
     # show image information
     image_info(image_path=image_path)
 
+    
     patch_features = []
     wsi = WholeSlideImage(image_path, tissue_mask_path)
     coordinates, tissue_percentages, patch_level, resize_factor, _, = wsi.get_tile_coordinates(
-        tiling_params=TilingParams(spacing=spacing, tile_size=patch_size, overlap=overlap, drop_holes=False, min_tissue_percentage=min_tissue_percentage, use_padding=True, tolerance=tolerance),
-        filter_params=FilterParams(ref_tile_size=patch_size, a_t=4, a_h=2, max_n_holes=8),
+        tiling_params=tiling_params,
+        filter_params=filter_params,
         num_workers=num_workers,
     )
+
     patch_coordinates, _ = select_coordinates_with_tissue(
         coordinates=coordinates,
         tissue_percentages=tissue_percentages,
@@ -208,10 +208,10 @@ def process_image_pathology(
     print(f"Extracting features from patches")
     for x, y in tqdm(patch_coordinates, desc="Extracting features"):
         patch_spacing = wsi.spacings[patch_level]
-        patch_size_resized = int(patch_size * resize_factor)
+        patch_size_resized = int(tiling_params.tile_size * resize_factor)
         patch = wsi.get_tile(x, y, [patch_size_resized, patch_size_resized], patch_spacing)
         # resize patch to the desired patch size
-        patch = cv2.resize(patch, (patch_size, patch_size), interpolation=cv2.INTER_LINEAR)
+        patch = cv2.resize(patch, (tiling_params.tile_size, tiling_params.tile_size), interpolation=cv2.INTER_LINEAR)
         features = feature_extraction(patch)
         patch_features.append({
             "coordinates": (x, y),
@@ -221,8 +221,8 @@ def process_image_pathology(
     patch_level_neural_representation = make_patch_level_neural_representation(
         title=title,
         patch_features=patch_features,
-        patch_size=[patch_size, patch_size],
-        patch_spacing=[spacing, spacing],
+        patch_size=[tiling_params.tile_size, tiling_params.tile_size],
+        patch_spacing=[tiling_params.spacing, tiling_params.spacing],
         image_size=wsi.level_dimensions[0],
         image_spacing=[wsi.spacings[0], wsi.spacings[0]],
     )
@@ -296,14 +296,35 @@ def process_image(
     Generate a list of patch features from an image
     """
     if task_description["domain"] == "pathology":
-        max_number_of_tiles = 14_000 if task_description["task_type"] in ["classification", "regression"] else None
+        task_type = task_description["task_type"]
+        max_number_of_tiles = 14_000 if task_type in ["classification", "regression"] else None
+
+        if task_type in ["detection", "segmentation"]:
+            tiling_params = TilingParams(
+                spacing=0.5, tolerance=0.07, tile_size=224, overlap=0,
+                drop_holes=False, min_tissue_percentage=0.1, use_padding=True
+            )
+            filter_params = FilterParams(
+                ref_tile_size=64, a_t=1, a_h=1, max_n_holes=8
+            )
+        else:
+            tiling_params = TilingParams(
+                spacing=0.5, tolerance=0.07, tile_size=512, overlap=0.0,
+                drop_holes=False, min_tissue_percentage=0.25, use_padding=True
+            )
+            filter_params = FilterParams(
+                ref_tile_size=256, a_t=4, a_h=2, max_n_holes=8
+            )
 
         patch_level_neural_representation = process_image_pathology(
             image_path=image_path,
             tissue_mask_path=tissue_mask_path,
             title=title,
             max_number_of_tiles=max_number_of_tiles,
+            tiling_params=tiling_params,
+            filter_params=filter_params,
         )
+
     elif task_description["domain"] in ["CT", "MR"]:
         patch_level_neural_representation = process_image_radiology(
             image_path=image_path,
