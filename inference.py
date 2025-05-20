@@ -301,8 +301,8 @@ def process_image(
 
         if task_type in ["detection", "segmentation"]:
             tiling_params = TilingParams(
-                spacing=0.5, tolerance=0.07, tile_size=224, overlap=0,
-                drop_holes=False, min_tissue_percentage=0.1, use_padding=True
+                spacing=0.5, tolerance=0.07, tile_size=224, overlap=0.0,
+                drop_holes=False, min_tissue_ratio=0.1, use_padding=True
             )
             filter_params = FilterParams(
                 ref_tile_size=64, a_t=1, a_h=1, max_n_holes=8
@@ -310,7 +310,7 @@ def process_image(
         else:
             tiling_params = TilingParams(
                 spacing=0.5, tolerance=0.07, tile_size=512, overlap=0.0,
-                drop_holes=False, min_tissue_percentage=0.25, use_padding=True
+                drop_holes=False, min_tissue_ratio=0.25, use_padding=True
             )
             filter_params = FilterParams(
                 ref_tile_size=256, a_t=4, a_h=2, max_n_holes=8
@@ -324,7 +324,6 @@ def process_image(
             tiling_params=tiling_params,
             filter_params=filter_params,
         )
-
     elif task_description["domain"] in ["CT", "MR"]:
         patch_level_neural_representation = process_image_radiology(
             image_path=image_path,
