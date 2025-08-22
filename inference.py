@@ -295,7 +295,8 @@ def process_image(
     """
     Generate a list of patch features from an image
     """
-    if task_description["domain"] == "pathology":
+    domain = task_description["domain"]
+    if domain == "pathology":
         task_type = task_description["task_type"]
         max_number_of_tiles = 14_000 if task_type in ["classification", "regression"] else None
 
@@ -324,13 +325,14 @@ def process_image(
             tiling_params=tiling_params,
             filter_params=filter_params,
         )
-    elif task_description["domain"] in ["CT", "MR"]:
+    elif domain in ["CT", "MR"]:
         patch_level_neural_representation = process_image_radiology(
             image_path=image_path,
             title=title,
+            patch_spacing=[1.0, 1.0, 1.0] if domain == "CT" else [1.0, 1.0, 3.0],
         )
     else:
-        warnings.warn(f"No processing implemented for domain: {task_description['domain']}, using default: radiology")
+        warnings.warn(f"No processing implemented for domain: {domain}, using default: radiology")
         patch_level_neural_representation = process_image_radiology(
             image_path=image_path,
         )
